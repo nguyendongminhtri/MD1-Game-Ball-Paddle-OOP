@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas {
+            margin-right: auto;
+            margin-left: auto;
+            display: block;
+        }
+
+        .test_rgb {
+            color: rgb(217, 217, 248);
+        }
+    </style>
+    <script src="model/Rectangle.js"></script>
+    <script src="model/Circle.js"></script>
+</head>
+<body>
+<!--<h1 class="test_rgb">OK</h1>-->
+<button onclick="drawCircle()">Play Game</button>
+<canvas width="1000px" height="600px" id="myCanvas" style="border: solid 1px red"></canvas>
+<script>
+    let canvas = document.getElementById('myCanvas');
+    let ctx = canvas.getContext('2d');
+    let widthCanvas = canvas.width;
+    let heightCanvas = canvas.height;
+    //Khai bao bien cho : Paddle
+    let widthPaddle = 150;
+    let heightPaddle = 30;
+    let xPaddle = (widthCanvas - widthPaddle) / 2
+    let yPaddle = heightCanvas - heightPaddle;
+    let colorPaddle = 'blue'
+    let paddle = new Rectangle(xPaddle, yPaddle, widthPaddle, heightPaddle, colorPaddle)
+
+    //Khai bao bien cho: Circle
+    let radius = 20;
+    let xCircle = widthCanvas / 2;
+    let yCircle = heightCanvas - radius - heightPaddle;
+    let color = '#ec1c66';
+    let circle = new Circle(xCircle, yCircle, radius, color)
+    let dx = 5;
+    let dy = -5;
+    //Khai bao bien cho: Bricks
+    let widthBricks = 100;
+    let heightBricks = 20;
+    let columnBricks = 6;
+    let rowBricks = 6;
+    let betweenColumnBricks = 40;
+    let betweenRowBricks = 30;
+    let leftRight = (widthCanvas - columnBricks * widthBricks - (columnBricks - 1) * betweenColumnBricks) / 2
+    let topBricks = 50;
+    let colorBricks = 'green';
+    let xBricks = 0;
+    let yBricks = 0;
+    let arrBricks = [];
+    // function checkCollisionBricks() {
+    //
+
+    function drawBricks() {
+        for (let i = 0; i < arrBricks.length; i++) {
+            // for (let j = 0; j < arrBricks.length; j++) {
+            // colorBricks = getRandomColor();
+            if (arrBricks[i].getStatus()) {
+                console.log('ve ve ve ve', i)
+                console.log('x --------', arrBricks[i].x)
+                console.log('y===============', arrBricks[i].y)
+                arrBricks[i].drawRect(ctx)
+            }
+            // if(bricks.getStatus()){
+            //     bricks.drawRect(ctx)
+            // }
+            // }
+        }
+    }
+
+    function drawBricks2() {
+        for (let i = 0; i < arrBricks.length; i++) {
+            // console.log('x ==== ', arrBricks[i].x)
+            // console.log('y ====', arrBricks[i].y)
+            // console.log('circel ==->', circle.y - radius)
+            console.log('status --->', arrBricks[i].getStatus())
+            if (arrBricks[i].getStatus()) {
+                if (
+                    circle.y + radius >= arrBricks[i].y && arrBricks[i].height && circle.x + radius >= arrBricks[i].x && circle.x - radius <= arrBricks[i].width + arrBricks[i].x
+                    // circle.y + radius >= arrBricks[i].y && circle.x + radius >= arrBricks[i].x && circle.x - radius <= arrBricks[i].width + arrBricks[i].x
+                    && circle.y - radius <= arrBricks[i].y + arrBricks[i].height
+                ) {
+                    arrBricks[i].setStatus(false)
+                    // arrBricks[i].splice(i,1)
+                    dy = -dy
+                } else if (
+                    circle.x + radius >= arrBricks[i].x && circle.y + radius >= arrBricks[i].y && circle.y - radius <= arrBricks[i].y + arrBricks[i].height
+                    && circle.x - radius <= arrBricks[i].x + arrBricks[i].width
+                ) {
+                    arrBricks[i].setStatus(false)
+                    dx = -dx
+                }
+            }
+
+
+        }
+    }
+
+
+    function checkCollisionBricksAndCircle() {
+        for (let i = 0; i < rowBricks; i++) {
+            for (let j = 0; j < columnBricks; j++) {
+                // colorBricks = getRandomColor();
+                xBricks = leftRight + j * (widthBricks + betweenColumnBricks)
+                yBricks = topBricks + i * (heightBricks + betweenRowBricks)
+                let bricks = new Rectangle(xBricks, yBricks, widthBricks, heightBricks, colorBricks, true)
+                arrBricks.push(bricks);
+                // if(bricks.getStatus()){
+                //     bricks.drawRect(ctx)
+                // }
+                bricks.drawRect(ctx)
+            }
+        }
+
+    }
+
+    checkCollisionBricksAndCircle();
+
+    function getRanDomHex() {
+        return Math.floor(Math.random() * 255);
+    }
+
+    function getRandomColor() {
+        let red = this.getRanDomHex();
+        let green = this.getRanDomHex();
+        let blue = this.getRanDomHex();
+        return "rgb(" + red + "," + blue + "," + green + ")";
+    }
+
+    drawGame();
+
+    //Di chuyen: Paddle
+    function selectKeyBoard(evt) {
+        console.log('evt --->', evt)
+        // if(evt.keyCode !==37 || evt.keyCode !== 39){
+        //     return;
+        // }
+        // clearCanvas();
+        // drawGame();
+        paddle.drawRect(ctx)
+        switch (evt.keyCode) {
+            case 37:
+                if (paddle.x <= 0) {
+                    return
+                }
+                paddle.moveLeft();
+                // console.log('x Paddle --->', paddle.x)
+                break;
+            case 39:
+                if (paddle.x + widthPaddle >= widthCanvas) {
+                    return;
+                }
+                paddle.moveRight();
+                // console.log('x Paddle --->', paddle.x)
+                break;
+        }
+    }
+
+    // let giaToc = dx
+    addEventListener('keydown', selectKeyBoard)
+
+    function drawGame() {
+        paddle.drawRect(ctx);
+        circle.drawCircle(ctx)
+        // checkCollisionBricksAndCircle()
+        // drawCircle();
+
+        drawBricks2()
+        drawBricks()
+        // requestAnimationFrame(drawGame)
+    }
+
+    // checkCollisionBricksAndCircle()
+    //Di chuyen: Circle
+    function drawCircle() {
+        clearCanvas()
+        drawGame()
+
+        // drawBricks()
+        // console.log('toa do ball -->', circle.x + radius)
+        if (circle.x + radius >= widthCanvas || circle.x <= radius) {
+            dx = -dx;
+        }
+        // console.log('circle y --->', circle.y)
+        if (circle.y <= radius || circle.y + radius >= heightCanvas) {
+            dy = -dy;
+        }
+        circle.setDx(dx);
+        circle.setDy(dy)
+        circle.moveRightLeft()
+        circle.moveTopDown();
+        checkCollision()
+        requestAnimationFrame(drawCircle)
+    }
+
+    //Xu ly va tram: Paddle vs Circle
+    function checkCollision() {
+        // console.log('xxxxxx---->',circle.x+radius)
+        // console.log('padd ee xxxx --->', paddle.x)
+        if (circle.x + radius >= paddle.x && paddle.x + widthPaddle >= circle.x - radius && circle.y + radius >= paddle.y) {
+            dy = -dy;
+        }
+    }
+
+    // drawCircle()
+    function clearCanvas() {
+        ctx.clearRect(0, 0, widthCanvas, heightCanvas)
+    }
+</script>
+</body>
+</html>
